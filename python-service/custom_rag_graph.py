@@ -575,12 +575,7 @@ class CustomRagGraph:
         chat_history = state.get("chat_history", [])
 
         if not results:
-            # Answer already set in query_database if error or missing params
-            existing_answer = state.get("answer", "")
-            if existing_answer:
-                yield {"answer": existing_answer}
-            else:
-                yield {"answer": "No books found matching your criteria."}
+            yield {"answer": "No books found matching your criteria."}
             return
 
         logger.info(f"📝 Formatting answer for {len(results)} books")

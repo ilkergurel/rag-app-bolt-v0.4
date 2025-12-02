@@ -89,22 +89,38 @@ async def generate_rag_response(chat_id: str, query: str, queue: asyncio.Queue):
                     if node_name:
                         
                         logger.info(f"Node STARTED: {node_name}")
+                        # --- PROGRESS: Classify Query (Analyzing) ---
+                        if node_name == "classify_query" and "classify_query_start" not in nodes_executed:
+                            nodes_executed.add("classify_query_start")
+                            progress_event = json.dumps({"type": "progress", "stage": "analyzing"}) + "\n"
+                            await queue.put(progress_event)
+                            logger.info("Stage: analyzing (classify_query started)")
+                        # --- PROGRESS: Retrieve (Retrieving) ---
+                        elif node_name == "query_database" and "query_database_start" not in nodes_executed:
+                            nodes_executed.add("query_database_start")
+                            progress_event = json.dumps({"type": "progress", "stage": "retrieving"}) + "\n"
+                            await queue.put(progress_event)
+                            logger.info("Stage: retrieving (query_database started)")
+                        # --- PROGRESS: Format DB Answer (Generating) ---
+                        elif node_name == "format_db_answer" and "format_db_answer_start" not in nodes_executed:
+                            nodes_executed.add("format_db_answer_start")
+                            progress_event = json.dumps({"type": "progress", "stage": "generating"}) + "\n"
+                            await queue.put(progress_event)
+                            logger.info("Stage: generating (format_db_answer started)")    
 
                         # --- PROGRESS: Enrich Query (Analyzing) ---
-                        if node_name == "enrich_query" and "enrich_query_start" not in nodes_executed:
+                        elif node_name == "enrich_query" and "enrich_query_start" not in nodes_executed:
                             nodes_executed.add("enrich_query_start")
                             # Send JSON to UI
                             progress_event = json.dumps({"type": "progress", "stage": "analyzing"}) + "\n"
                             await queue.put(progress_event)
                             logger.info("Stage: analyzing (enrich_query started)")
-
                         # --- PROGRESS: Retrieve (Retrieving) ---
                         elif node_name == "retrieve" and "retrieve_start" not in nodes_executed:
                             nodes_executed.add("retrieve_start")
                             progress_event = json.dumps({"type": "progress", "stage": "retrieving"}) + "\n"
                             await queue.put(progress_event)
                             logger.info("Stage: retrieving (retrieve started)")
-
                         # --- PROGRESS: Generate (Generating) ---
                         elif node_name == "generate" and "generate_start" not in nodes_executed:
                             nodes_executed.add("generate_start")
@@ -121,30 +137,30 @@ async def generate_rag_response(chat_id: str, query: str, queue: asyncio.Queue):
                     logger.info(f"Node COMPLETED: {list(graph_data.keys())}")
 
                     # Handle classification result
-                    if "classify_query" in graph_data:
-                        node_output = graph_data["classify_query"]
-                        if isinstance(node_output, dict) and "query_type" in node_output:
-                            query_type = node_output["query_type"]
-                            classification_event = json.dumps({
-                                "type": "classification",
-                                "query_type": query_type
-                            }) + "\n"
-                            await queue.put(classification_event)
-                            logger.info(f"Classification: {query_type}")
+                    # if "classify_query" in graph_data:
+                    #     node_output = graph_data["classify_query"]
+                    #     if isinstance(node_output, dict) and "query_type" in node_output:
+                    #         query_type = node_output["query_type"]
+                    #         classification_event = json.dumps({
+                    #             "type": "classification",
+                    #             "query_type": query_type
+                    #         }) + "\n"
+                    #         await queue.put(classification_event)
+                    #         logger.info(f"Classification: {query_type}")
 
-                    # Handle database query results
-                    if "query_database" in graph_data:
-                        node_output = graph_data["query_database"]
-                        if isinstance(node_output, dict) and "db_results" in node_output:
-                            db_results = node_output["db_results"]
-                            if db_results:
-                                db_results_event = json.dumps({
-                                    "type": "database_results",
-                                    "results": db_results,
-                                    "count": len(db_results)
-                                }) + "\n"
-                                await queue.put(db_results_event)
-                                logger.info(f"Database results: {len(db_results)} books")
+                    # # Handle database query results
+                    # if "query_database" in graph_data:
+                    #     node_output = graph_data["query_database"]
+                    #     if isinstance(node_output, dict) and "db_results" in node_output:
+                    #         db_results = node_output["db_results"]
+                    #         if db_results:
+                    #             db_results_event = json.dumps({
+                    #                 "type": "database_results",
+                    #                 "results": db_results,
+                    #                 "count": len(db_results)
+                    #             }) + "\n"
+                    #             await queue.put(db_results_event)
+                    #             logger.info(f"Database results: {len(db_results)} books")
 
                     # Handle format_db_answer streaming
                     if "format_db_answer" in graph_data:
