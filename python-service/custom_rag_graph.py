@@ -700,8 +700,8 @@ class CustomRagGraph:
                 ("system",
                 "You are a content extracting expert for RAG application. In the same language, extract the content from the user's query according to the following instructions:"
                 "Use the provided chat history to resolve ambiguity or references (e.g., 'it', 'he', 'that') in the user's query if there is any, also obtain and use the context if they are related with the user's query,"
-                "If the user's query is composed of multiple queries or if the query is complex, decompose the user's query into a list of simpler, self-contained sub-contexts with maximum number of 8,"
-                "If the user's query is simple, create a list of closely related, simple, self-contained subqueries with maximum number of 8,"
+                "If the user's query is composed of multiple queries or if the query is complex, decompose the user's query into a list of simpler, self-contained sub-contexts with maximum number of 6,"
+                "If the user's query is simple, create a list of closely related, simple, self-contained subqueries with maximum number of 6,"
                 "If the user's query contains completely unknown words, keep the query just as it is,"                
                 "Extract the contexts incorporating synonyms to improve search recall,"
                 "Extract the contexts as clearer, more, specific, less ambiguous, connected with,"
@@ -740,8 +740,8 @@ class CustomRagGraph:
         # logger.info("--- Enrich query ---")    
         # logger.info(f"Enrich query: {state['query']}\n-->{new_queries}")
 
-        # Create new queries with maximum number of 8
-        new_queries = new_queries[:8] if len(new_queries) > 8 else new_queries
+        # Create new queries with maximum number of 6
+        new_queries = new_queries[:6] if len(new_queries) > 6 else new_queries
 
         logger.info(f" Transformed Queries:")
         for i, new_query in enumerate(new_queries):
