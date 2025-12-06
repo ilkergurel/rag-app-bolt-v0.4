@@ -161,29 +161,6 @@ class CustomRagGraph:
             )
     
         # 3. Define the System Message Template (updated for citation)
-
-        # system_template = """You are a highly capable AI assistant. Your main task is to answer the user's QUESTION based SOLELY on the provided CONTEXT in the same language of the user's input and populate the required output structure correctly.
-                
-        #     If user's question is a follow-up question, use the provided conversation history to understand the content of the current question as conversation history is relevant to the user's question.
-            
-        #     Instructions:
-        #     1. If the CONTEXT contain some text related to the user's question (not superficially), provide a clear, comprehensive answer ONLY using the information given in that CONTEXT.
-        #         In that case, you MUST ensure that EACH sentence in the answer is directly traceable to the provided CONTEXT.
-        #         So, at the END of each sentence, STRICTLY add string of IDs given in the CONTEXT with EXACTLY that format of "<some_doc_id> in order to show the traceable reference from CONTEXT".                
-        #     2. If CONTEXT is not related to the user's question or only superficially related, STRICTLY, do not generate any answer. Instead, your entire response MUST be only one sentence and it MUST be translated to the language of the user's question: "There is no information in the provided context to answer the question.".
-        #     In that case, do not put "<some_doc_id>".               
-        #     3. If CONTEXT does not contain any text, STRICTLY, do not generate any answer. Instead, your entire response MUST be only one sentence and it MUST be translated to the language of the user's question: "There is no information in the provided context to answer the question.".
-        #     In that case, do not put "<some_doc_id>". 
-        #     4. ABSOLUTELY DO NOT invent, guess, or add information that is not explicitly present in the CONTEXT. Any ungrounded information will be treated as a severe error."           
-            
-        #     Example-1 Output Format:
-        #     The psychological concept of slips of the tongue reveals suppressed desires<doc_123_chunk_123>. Freud found that<doc_456_chunk_234>. 
-
-        #     Example-2 Output Format:
-        #     There is no information about the question.          
-
-        #     CONTEXT: {context}
-        #     """
         
         system_template = """You are a highly capable AI assistant. Your task is to answer the user's QUESTION based SOLELY on the provided CONTEXT in the same language of the user's input and populate the required output structure correctly.
 
@@ -543,6 +520,9 @@ class CustomRagGraph:
         elif "year_end" in query_params and "year_start" not in query_params:
             query_params["year_start"] = 0
 
+        if query_params["year_start"] == 0 and query_params["year_end"] == 0:
+            query_params["year_end"] = current_year
+
         logger.info(f"🔎 Querying database with final filters: {query_params}")
 
         if self.db_service is None:
@@ -593,25 +573,6 @@ class CustomRagGraph:
         truncated = count > max_display
         truncated_msg = f"\n*(...and {count - max_display} more books not listed here)*" if truncated else ""
 
-        # format_prompt = ChatPromptTemplate.from_messages([
-        #     ("system", """You are a helpful assistant that presents database query results to users.
-
-        #     Your task:
-        #     1. Provide a brief, natural summary answering the user's question
-        #     2. Mention the total number of books found
-        #     3. If more than 100 results, mention that only the first 100 are shown
-        #     4. Keep the response concise (2-3 sentences maximum)
-        #     5. Use the same language as the user's query."""),
-        #     ("human", """User Query: {query}
-
-        #     Books Found: {count} books
-        #     {truncated_info}
-
-        #     Sample Results:
-        #     {books_text}
-
-        #     Provide a brief summary response.""")
-        # ])
 
         format_prompt = ChatPromptTemplate.from_messages([
             ("system", """You are a precise, multilingual assistant that presents database query results to users.
